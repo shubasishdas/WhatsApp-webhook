@@ -7,6 +7,8 @@
 
 "use strict";
 
+require("dotenv").config();
+
 // Access token for your app
 // (copy token from DevX getting started page
 // and save it as environment variable into the .env file)
@@ -18,6 +20,8 @@ const request = require("request"),
   body_parser = require("body-parser"),
   axios = require("axios").default,
   app = express().use(body_parser.json()); // creates express http server
+
+// console.log(process.env, process.env.PORT);
 
 // Sets server port and logs message on success
 app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
@@ -73,6 +77,8 @@ app.get("/webhook", (req, res) => {
    *This will be the Verify Token value when you set up webhook
    **/
   const verify_token = process.env.VERIFY_TOKEN;
+
+  console.log(verify_token, "~~~verify_token");
 
   // Parse params from the webhook verification request
   let mode = req.query["hub.mode"];
