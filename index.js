@@ -14,6 +14,8 @@ require("dotenv").config();
 // and save it as environment variable into the .env file)
 const token = process.env.WHATSAPP_TOKEN;
 
+console.log(process.env);
+
 // Imports dependencies and set up http server
 const request = require("request"),
   express = require("express"),
