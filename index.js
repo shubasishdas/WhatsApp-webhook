@@ -66,7 +66,9 @@ app.post("/webhook", (req, res) => {
       let from = req.body.entry[0].changes[0].value.messages[0].from;
       let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
 
+      console.log("before sendMessage");
       sendMessage(msg_body);
+      console.log("after sendMessage");
     }
     res.sendStatus(200);
   } else {
