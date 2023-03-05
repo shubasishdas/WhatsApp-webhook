@@ -10,8 +10,7 @@ app.listen(process.env.PORT || 3007, () =>
   console.log("webhook is listening at port : ", process.env.PORT)
 );
 
-const sendMessage = async (msg_body) => {
-  console.log(msg_body, "~~~msg_body");
+const sendMessage = async ({ phone_number_id, from, msg_body }) => {
   try {
     const response1 = await axios.post(
       `https://retune.so/api/chat/${process.env.CHAT_ID}/response`,
@@ -27,9 +26,8 @@ const sendMessage = async (msg_body) => {
       }
     );
     const value = response1.data.response.value;
-    console.log({ data: response1.data }, "~~~response001");
 
-    const response2 = await axios.post(
+    await axios.post(
       "https://graph.facebook.com/v15.0/113349255023563/messages",
       {
         messaging_product: "whatsapp",
@@ -43,15 +41,10 @@ const sendMessage = async (msg_body) => {
         },
       }
     );
-    console.log(response2, "~~~response002");
   } catch (error) {
-    console.log(error, "~~~001error");
     console.error(error);
   }
-  console.log(msg_body, "~~~msg_body2");
 };
-
-console.log("heyy!!!");
 
 app.post("/webhook", async (req, res) => {
   let body = req.body;
@@ -69,11 +62,9 @@ app.post("/webhook", async (req, res) => {
       let from = req.body.entry[0].changes[0].value.messages[0].from;
       let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
 
-      console.log("before sendMessage");
-      await sendMessage(msg_body);
-      console.log("after sendMessage");
+      await sendMessage({ phone_number_id, from, msg_body });
     }
-    console.log("before sendStatus");
+
     res.sendStatus(200);
   } else {
     res.sendStatus(404);
