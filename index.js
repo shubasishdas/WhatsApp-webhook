@@ -6,13 +6,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express().use(bodyParser.json());
-app.listen(process.env.PORT || 3007, () =>
-  console.log("webhook is listening at port : ", process.env.PORT)
-);
+app.listen(process.env.PORT || 3007, () => console.log("webhook is listening"));
 
 const sendMessage = async ({ phone_number_id, from, msg_body }) => {
   try {
-    const response1 = await axios.post(
+    const responseFromRetune = await axios.post(
       `https://retune.so/api/chat/${process.env.CHAT_ID}/response`,
       {
         threadId: "11edbb38-23fb-ca60-815a-29bf52a422ea",
@@ -25,13 +23,13 @@ const sendMessage = async ({ phone_number_id, from, msg_body }) => {
         },
       }
     );
-    const value = response1.data.response.value;
+    const value = responseFromRetune.data.response.value;
 
     await axios.post(
-      "https://graph.facebook.com/v15.0/113349255023563/messages",
+      `https://graph.facebook.com/v15.0/${phone_number_id}/messages`,
       {
         messaging_product: "whatsapp",
-        to: "8801789136559",
+        to: from,
         text: { body: value },
       },
       {
@@ -51,14 +49,12 @@ app.post("/webhook", async (req, res) => {
   const messages = changes.value.messages[0];
   if (req.body.object) {
     if (messages) {
-      let phone_number_id = changes.value.metadata.phone_number_id;
-      let from = messages.from;
-      let msg_body = messages.text.body;
+      const phone_number_id = changes.value.metadata.phone_number_id;
+      const from = messages.from;
+      const msg_body = messages.text.body;
 
-      console.log(phone_number_id, from, msg_body);
       await sendMessage({ phone_number_id, from, msg_body });
     }
-
     res.sendStatus(200);
   } else {
     res.sendStatus(404);
@@ -67,9 +63,9 @@ app.post("/webhook", async (req, res) => {
 
 app.get("/webhook", (req, res) => {
   const verify_token = process.env.VERIFY_TOKEN;
-  let mode = req.query["hub.mode"];
-  let token = req.query["hub.verify_token"];
-  let challenge = req.query["hub.challenge"];
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
 
   if (mode && token) {
     if (mode === "subscribe" && token === verify_token) {
