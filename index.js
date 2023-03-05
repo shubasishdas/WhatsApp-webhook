@@ -53,7 +53,7 @@ const sendMessage = async (msg_body) => {
 
 console.log("heyy!!!");
 
-app.post("/webhook", (req, res) => {
+app.post("/webhook", async (req, res) => {
   let body = req.body;
   console.log(JSON.stringify(req.body, null, 2), "log_001");
   if (req.body.object) {
@@ -70,9 +70,10 @@ app.post("/webhook", (req, res) => {
       let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
 
       console.log("before sendMessage");
-      sendMessage(msg_body);
+      await sendMessage(msg_body);
       console.log("after sendMessage");
     }
+    console.log("before sendStatus");
     res.sendStatus(200);
   } else {
     res.sendStatus(404);
