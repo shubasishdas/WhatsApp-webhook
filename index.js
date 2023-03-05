@@ -47,21 +47,15 @@ const sendMessage = async ({ phone_number_id, from, msg_body }) => {
 };
 
 app.post("/webhook", async (req, res) => {
-  let body = req.body;
-  console.log(JSON.stringify(req.body, null, 2), "log_001");
+  const changes = req.body.entry[0].changes[0];
+  const messages = changes.value.messages[0];
   if (req.body.object) {
-    if (
-      req.body.entry &&
-      req.body.entry[0].changes &&
-      req.body.entry[0].changes[0] &&
-      req.body.entry[0].changes[0].value.messages &&
-      req.body.entry[0].changes[0].value.messages[0]
-    ) {
-      let phone_number_id =
-        req.body.entry[0].changes[0].value.metadata.phone_number_id;
-      let from = req.body.entry[0].changes[0].value.messages[0].from;
-      let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
+    if (messages) {
+      let phone_number_id = changes.value.metadata.phone_number_id;
+      let from = messages.from;
+      let msg_body = messages.text.body;
 
+      console.log(phone_number_id, from, msg_body);
       await sendMessage({ phone_number_id, from, msg_body });
     }
 
