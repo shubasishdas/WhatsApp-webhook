@@ -1,62 +1,71 @@
-const express = require("express");
-const bodyParser = require("body-parser");
+const request = require("request"),
+  express = require("express"),
+  body_parser = require("body-parser"),
+  axios = require("axios").default,
+  app = express().use(body_parser.json());
 
 require("dotenv").config();
 
-const app = express();
-const port = 3000;
+app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
 
-app.use(bodyParser.json());
-
-console.log(process.env);
-
-// app.get("/", (req, res) => {
-//   res.send("Hello World!");
-// });
-
-// const accountSid = process.env.TWILIO_ACCOUNT_SID;
-// const authToken = process.env.TWILIO_AUTH_TOKEN;
-// const client = require("twilio")(accountSid, authToken);
-
-// client.messages
-//   .create({
-//     from: "whatsapp:+14155238886",
-//     body: "Hello there!",
-//     to: "whatsapp:+8801789136559",
-//   })
-//   .then((message) => console.log(message.sid));
-
-app.get("/webhooks", (req, res) => {
-  if (
-    req.query["hub.mode"] == "subscribe" &&
-    req.query["hub.verify_token"] == token
-  ) {
-    res.send(req.query["hub.challenge"]);
+app.post("/webhook", (req, res) => {
+  let body = req.body;
+  console.log(JSON.stringify(req.body, null, 2));
+  if (req.body.object) {
+    if (
+      req.body.entry &&
+      req.body.entry[0].changes &&
+      req.body.entry[0].changes[0] &&
+      req.body.entry[0].changes[0].value.messages &&
+      req.body.entry[0].changes[0].value.messages[0]
+    ) {
+      let phone_number_id =
+        req.body.entry[0].changes[0].value.metadata.phone_number_id;
+      let from = req.body.entry[0].changes[0].value.messages[0].from;
+      let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
+      axios
+        .post(
+          "https://graph.facebook.com/v15.0/113349255023563/messages",
+          {
+            messaging_product: "whatsapp",
+            to: "8801789136559",
+            text: { body: "yo!!! " + msg_body },
+          },
+          {
+            headers: {
+              Authorization:
+                "Bearer EAAjysy5ijokBAIH0ykL9O86CQ6kjxI65E7U3YS2tHrticS0BfL3rMixCkol6fv6f40q449apGRjriELVK4NzOH8NCD6Eec5ElTQH6LTUpe2l73dA0lFKEXlQZCVMgeQN3tZCQLU8zvxix8wJZCgnOKtY80SGgGeTGswSTieiQDBtrvD0jO8R46Ejl2ZAcvt8d9F54ceBVsPmOMoeA1jF",
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then((response) => {
+          console.log(response);
+        })
+        .catch((error) => {
+          console.error(error);
+        });
+    }
+    // console.log("hey",token);
+    res.sendStatus(200);
   } else {
-    res.sendStatus(400);
+    res.sendStatus(404);
   }
 });
 
-app.post("/webhook", (req, res) => {
-  // Extract relevant data from incoming message
-  const message = req.body.messages[0];
-  const from = message.from;
-  const text = message.text;
+app.get("/webhook", (req, res) => {
+  const verify_token = process.env.VERIFY_TOKEN;
 
-  // Process incoming message
-  console.log(`Received message from ${from}: ${text}`);
-  // Send automated response
-  const response = {
-    to: from,
-    type: "text",
-    text: "Thank you for your message!",
-  };
-  // TODO: Send response using the WhatsApp Business API
+  let mode = req.query["hub.mode"];
+  let token = req.query["hub.verify_token"];
+  let challenge = req.query["hub.challenge"];
 
-  // Send response back to client
-  res.send("Received a webhook event!");
-});
-
-app.listen(port, () => {
-  console.log(`Webhook server listening at http://localhost:${port}`);
+  if (mode && token) {
+    if (mode === "subscribe" && token === verify_token) {
+      console.log("WEBHOOK_VERIFIED");
+      res.status(200).send(challenge);
+    } else {
+      res.sendStatus(403);
+    }
+  }
 });
