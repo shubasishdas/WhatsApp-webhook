@@ -25,6 +25,26 @@ app.post("/webhook", (req, res) => {
         req.body.entry[0].changes[0].value.metadata.phone_number_id;
       let from = req.body.entry[0].changes[0].value.messages[0].from;
       let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
+
+      fetch(`https://retune.so/api/chat/${process.env.CHAT_ID}/response`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Retune-API-Key": process.env.RETUNE_API_KEY,
+        },
+        body: JSON.stringify({
+          threadId: "11edbb38-23fb-ca60-815a-29bf52a422ea",
+          input: msg_body,
+        }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          console.log({ data });
+        })
+        .catch((error) => {
+          console.log({ error });
+        });
+
       axios
         .post(
           "https://graph.facebook.com/v15.0/113349255023563/messages",
