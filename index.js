@@ -55,7 +55,6 @@ app.post("/webhook", async (req, res) => {
 
       await sendMessage({ phone_number_id, from, msg_body });
     }
-
     res.sendStatus(200);
   } else {
     res.sendStatus(404);
