@@ -11,6 +11,7 @@ app.listen(process.env.PORT || 3007, () =>
 );
 
 const sendMessage = async (msg_body) => {
+  console.log(msg_body, "~~~msg_body");
   try {
     const response1 = await axios.post(
       `https://retune.so/api/chat/${process.env.CHAT_ID}/response`,
@@ -44,8 +45,10 @@ const sendMessage = async (msg_body) => {
     );
     console.log(response2, "~~~response002");
   } catch (error) {
+    console.log(error, "~~~001error");
     console.error(error);
   }
+  console.log(msg_body, "~~~msg_body2");
 };
 
 console.log("heyy!!!");
