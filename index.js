@@ -25,6 +25,8 @@ const sendMessage = async ({ phone_number_id, from, msg_body }) => {
     );
     const value = responseFromRetune.data.response.value;
 
+    console.log({ value, phone_number_id, from, msg_body });
+
     await axios.post(
       `https://graph.facebook.com/v15.0/${phone_number_id}/messages`,
       {
