@@ -13,7 +13,7 @@ const sendMessage = async ({ phone_number_id, from, msg_body }) => {
     const responseFromRetune = await axios.post(
       `https://retune.so/api/chat/${process.env.CHAT_ID}/response`,
       {
-        threadId: "11edbb38-23fb-ca60-815a-29bf52a422ea",
+        threadId: "11edbb5b-07b2-3150-9bd9-155cb3a2a0b2",
         input: msg_body,
       },
       {
