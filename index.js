@@ -8,6 +8,8 @@ require("dotenv").config();
 
 app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
 
+console.log("heyy!!!");
+
 app.post("/webhook", (req, res) => {
   let body = req.body;
   console.log(JSON.stringify(req.body, null, 2));
