@@ -1,12 +1,52 @@
-const request = require("request"),
-  express = require("express"),
-  body_parser = require("body-parser"),
-  axios = require("axios").default,
-  app = express().use(body_parser.json());
+import express from "express";
+import bodyParser from "body-parser";
+import axios from "axios";
+import dotenv from "dotenv";
 
-require("dotenv").config();
+dotenv.config();
 
-app.listen(process.env.PORT || 1337, () => console.log("webhook is listening"));
+const app = express().use(bodyParser.json());
+app.listen(process.env.PORT || 3007, () =>
+  console.log("webhook is listening at port : ", process.env.PORT)
+);
+
+const sendMessage = async (msg_body) => {
+  try {
+    const response1 = await axios.post(
+      `https://retune.so/api/chat/${process.env.CHAT_ID}/response`,
+      {
+        threadId: "11edbb38-23fb-ca60-815a-29bf52a422ea",
+        input: msg_body,
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "X-Retune-API-Key": process.env.RETUNE_API_KEY,
+        },
+      }
+    );
+    const value = response1.data.response.value;
+    console.log({ data: response1.data }, "~~~response001");
+
+    const response2 = await axios.post(
+      "https://graph.facebook.com/v15.0/113349255023563/messages",
+      {
+        messaging_product: "whatsapp",
+        to: "8801789136559",
+        text: { body: value },
+      },
+      {
+        headers: {
+          Authorization: "Bearer " + process.env.WHATSAPP_TOKEN,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    console.log(response2, "~~~response002");
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 console.log("heyy!!!");
 
@@ -26,48 +66,8 @@ app.post("/webhook", (req, res) => {
       let from = req.body.entry[0].changes[0].value.messages[0].from;
       let msg_body = req.body.entry[0].changes[0].value.messages[0].text.body;
 
-      fetch(`https://retune.so/api/chat/${process.env.CHAT_ID}/response`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Retune-API-Key": process.env.RETUNE_API_KEY,
-        },
-        body: JSON.stringify({
-          threadId: "11edbb38-23fb-ca60-815a-29bf52a422ea",
-          input: msg_body,
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          console.log({ data });
-        })
-        .catch((error) => {
-          console.log({ error });
-        });
-
-      axios
-        .post(
-          "https://graph.facebook.com/v15.0/113349255023563/messages",
-          {
-            messaging_product: "whatsapp",
-            to: "8801789136559",
-            text: { body: "yo!!! " + msg_body },
-          },
-          {
-            headers: {
-              Authorization: "Bearer " + process.env.WHATSAPP_TOKEN,
-              "Content-Type": "application/json",
-            },
-          }
-        )
-        .then((response) => {
-          console.log(response);
-        })
-        .catch((error) => {
-          console.error(error);
-        });
+      sendMessage(msg_body);
     }
-    // console.log("hey",token);
     res.sendStatus(200);
   } else {
     res.sendStatus(404);
@@ -76,7 +76,6 @@ app.post("/webhook", (req, res) => {
 
 app.get("/webhook", (req, res) => {
   const verify_token = process.env.VERIFY_TOKEN;
-
   let mode = req.query["hub.mode"];
   let token = req.query["hub.verify_token"];
   let challenge = req.query["hub.challenge"];
