@@ -33,8 +33,7 @@ app.post("/webhook", (req, res) => {
           },
           {
             headers: {
-              Authorization:
-                "Bearer EAAjysy5ijokBAIH0ykL9O86CQ6kjxI65E7U3YS2tHrticS0BfL3rMixCkol6fv6f40q449apGRjriELVK4NzOH8NCD6Eec5ElTQH6LTUpe2l73dA0lFKEXlQZCVMgeQN3tZCQLU8zvxix8wJZCgnOKtY80SGgGeTGswSTieiQDBtrvD0jO8R46Ejl2ZAcvt8d9F54ceBVsPmOMoeA1jF",
+              Authorization: "Bearer " + process.env.WHATSAPP_TOKEN,
               "Content-Type": "application/json",
             },
           }
